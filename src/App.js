@@ -66,8 +66,8 @@ function App() {
   function updateData(startDate) {
     setStartDate(startDate)
     const year = startDate.getFullYear();
-    const month = startDate.getMonth().toString().padStart(2, 0);
-    const day = startDate.getDay().toString().padStart(2, 0);
+    const month = (startDate.getMonth()+1).toString().padStart(2, 0);
+    const day = startDate.getDate().toString().padStart(2, 0);
     let abortController = new AbortController();
       const fetchData=()=>{
         const url = `https://raw.githubusercontent.com/sean-reid/nyt-crosswords-data/main/${year}/${month}/${day}.json`
