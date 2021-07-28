@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/nyt-crosswords/static/css/main.9910d3b5.chunk.css",
-    "main.js": "/nyt-crosswords/static/js/main.82c3a894.chunk.js",
-    "main.js.map": "/nyt-crosswords/static/js/main.82c3a894.chunk.js.map",
+    "main.js": "/nyt-crosswords/static/js/main.14c259c4.chunk.js",
+    "main.js.map": "/nyt-crosswords/static/js/main.14c259c4.chunk.js.map",
     "runtime-main.js": "/nyt-crosswords/static/js/runtime-main.46b4aff8.js",
     "runtime-main.js.map": "/nyt-crosswords/static/js/runtime-main.46b4aff8.js.map",
     "static/css/2.9c6b934b.chunk.css": "/nyt-crosswords/static/css/2.9c6b934b.chunk.css",
@@ -18,6 +18,6 @@
     "static/css/2.9c6b934b.chunk.css",
     "static/js/2.bc1d5e79.chunk.js",
     "static/css/main.9910d3b5.chunk.css",
-    "static/js/main.82c3a894.chunk.js"
+    "static/js/main.14c259c4.chunk.js"
   ]
 }
