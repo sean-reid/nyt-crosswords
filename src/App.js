@@ -1,129 +1,201 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import Crossword from '@jaredreisinger/react-crossword';
+import DatePicker from 'react-date-picker';
+import styled from 'styled-components';
 
-//https://stackoverflow.com/questions/16102263/to-find-index-of-multidimensional-array-in-javascript
-function getIndexOfK(arr, k) {
-  for (var i = 0; i < arr.length; i++) {
-    var index = arr[i].indexOf(k);
-    if (index > -1) {
-      return [i, index];
+const dataStart = {
+  across: {
+    1: {
+      clue: '',
+      answer: '',
+      row: 0,
+      col: 0,
+    },
+  },
+  down: {
+    1: {
+      clue: '',
+      answer: '',
+      row: 0,
+      col: 0,
+    },
+  },
+};
+
+const Page = styled.div`
+  padding: 2em;
+`;
+
+const Header = styled.h1`
+  margin-bottom: 1em;
+`;
+
+const Commands = styled.div``;
+
+const Command = styled.button`
+  margin-right: 1em;
+`;
+
+const CrosswordWrapper = styled.div`
+  margin-top: 2em;
+  max-width: 100%;
+  /* and some fun making use of the defined class names */
+  .crossword.correct {
+    rect {
+      stroke: rgb(100, 200, 100) !important;
+    }
+    svg > rect {
+      fill: rgb(100, 200, 100) !important;
+    }
+    text {
+      fill: rgb(100, 200, 100) !important;
     }
   }
-}
-
-Number.prototype.pad = function(size) {
-  var s = String(this);
-  while (s.length < (size || 2)) {s = "0" + s;}
-  return s;
-}
-
-function status(response) {
-  if (response.status >= 200 && response.status < 300) {
-    return Promise.resolve(response)
-  } else {
-    return Promise.reject(new Error(response.statusText))
-  }
-}
-
-function json(response) {
-  return response.json()
-}
-
-
-
-function ConvertData(data) {
-  let size = data.size;
-  let answers = data.grid;
-  let nums = data.gridnums;
-  let answersGrid = [];
-  let answersRow = [];
-  for (let index_rows = 0; index_rows < size.rows; index_rows++) {
-    answersRow = [];
-    for (let index_cols = 0; index_cols < size.cols; index_cols++) {
-      answersRow.push(answers[size.cols*index_rows + index_cols]);
+  .clue.correct {
+    ::before {
+      content: '\u2713'; /* a.k.a. checkmark: ✓ */
+      display: inline-block;
+      text-decoration: none;
+      color: rgb(100, 200, 100);
+      margin-right: 0.25em;
     }
-    answersGrid.push(answersRow);
+    text-decoration: line-through;
+    color: rgb(130, 130, 130);
   }
-  let numsGrid = [];
-  let numsRow = [];
-  for (let index_rows = 0; index_rows < size.rows; index_rows++) {
-    numsRow = [];
-    for (let index_cols = 0; index_cols < size.cols; index_cols++) {
-      numsRow.push(nums[size.cols*index_rows + index_cols]);
-    }
-    numsGrid.push(numsRow);
-  }
-  let acrossClues = data.clues.across;
-  let downClues = data.clues.down;
-  let clueNum = 0;
-  let result = [];
-  let answer = "";
-  let clue = "";
-  for (let index_across = 0; index_across < acrossClues.length; index_across++) {
-    clue = acrossClues[index_across]
-    clueNum = GetClueNumber(clue);
-    result = getIndexOfK(numsGrid, clueNum);
-    answer = answersGrid[result[0]][result[1]];
-    answer = GetAnswer(answersGrid, result, "across");
-    console.log(clue, answer);
-  }
-}
+`;
 
-function GetAnswer(answersGrid, indicies, direction) {
-  let answer = "";
-  let row = indicies[0];
-  let col = indicies[1];
-  let current_letter = answersGrid[row][col];
-  while (current_letter !== "*") {
-    answer += current_letter;
-    if (direction === "across") {
-      col++;
-    } else if (direction === "down") {
-      row++;
-    }
-    current_letter = answersGrid[row][col];
-  }
-  return answer;
-}
+const Messages = styled.pre`
+  background-color: rgb(230, 230, 230);
+  margin: 1em 0;
+  padding: 1em;
+`;
 
-function GetClueNumber(clue) {
-  let clueNum = parseInt(clue.split('.')[0]);
-  return clueNum
-}
+// in order to make this a more-comprehensive example, and to vet Crossword's
+// features, we actually implement a fair amount...
+
 
 function App() {
-  const year = 2011;
-  const month = 2;
-  const day = 20;
-  let url = `https://raw.githubusercontent.com/sean-reid/nyt-crosswords-data/master/${(year).pad(4)}/${(month).pad(2)}/${(day).pad(2)}.json`
-  fetch(url)
-  .then(status)
-  .then(json)
-  .then(function(data) {
-    console.log('Request succeeded with JSON response', data);
-    return data
-  }).then(ConvertData)
-  .catch(function(error) {
-    console.log('Request failed', error);
-  });
+
+  const [data,setData]=useState(dataStart);
+  const [startDate, setStartDate] = useState(new Date());
+  
+  function updateData(startDate) {
+    setStartDate(startDate)
+    const year = startDate.getFullYear();
+    const month = startDate.getMonth().toString().padStart(2, 0);
+    const day = startDate.getDay().toString().padStart(2, 0);
+    let abortController = new AbortController();
+      const fetchData=()=>{
+        const url = `https://raw.githubusercontent.com/sean-reid/nyt-crosswords-data/main/${year}/${month}/${day}.json`
+        fetch(url)
+          .then(function(response){
+            console.log(response)
+            return response.text();
+          })
+          .then(function(myText) {
+            const myJson = JSON.parse(myText);
+            console.log(myJson);
+            setData(myJson)
+            console.log(data);
+          });
+      }
+      fetchData();
+      return () => {
+        abortController.abort();
+      }
+    }
+
+
+  const crossword = useRef();
+
+  const focus = useCallback((event) => {
+    crossword.current.focus();
+  }, []);
+
+  const fillAllAnswers = useCallback((event) => {
+    crossword.current.fillAllAnswers();
+  }, []);
+
+  const reset = useCallback((event) => {
+    crossword.current.reset();
+  }, []);
+
+  // We don't really *do* anything with callbacks from the Crossword component,
+  // but we can at least show that they are happening.  You would want to do
+  // something more interesting than simply collecting them as messages.
+  const [messages, setMessages] = useState([]);
+
+  const addMessage = useCallback((message) => {
+    setMessages((m) => m.concat(`${message}\n`));
+  }, []);
+
+  // onCorrect is called with the direction, number, and the correct answer.
+  const onCorrect = useCallback(
+    (direction, number, answer) => {
+      addMessage(`onCorrect: "${direction}", "${number}", "${answer}"`);
+    },
+    [addMessage]
+  );
+
+  // onLoadedCorrect is called with an array of the already-correct answers,
+  // each element itself is an array with the same values as in onCorrect: the
+  // direction, number, and the correct answer.
+  const onLoadedCorrect = useCallback(
+    (answers) => {
+      addMessage(
+        `onLoadedCorrect:\n${answers
+          .map(
+            ([direction, number, answer]) =>
+              `    - "${direction}", "${number}", "${answer}"`
+          )
+          .join('\n')}`
+      );
+    },
+    [addMessage]
+  );
+
+  // onCrosswordCorrect is called with a truthy/falsy value.
+  const onCrosswordCorrect = useCallback(
+    (isCorrect) => {
+      addMessage(`onCrosswordCorrect: ${JSON.stringify(isCorrect)}`);
+    },
+    [addMessage]
+  );
+
+  // onCellChange is called with the row, column, and character.
+  const onCellChange = useCallback(
+    (row, col, char) => {
+      addMessage(`onCellChange: "${row}", "${col}", "${char}"`);
+    },
+    [addMessage]
+  );
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Page>
+      <Header>NYT Crosswords</Header>
+
+      <p>
+        Enter date of NYT crossword to solve.
+      </p>
+      <DatePicker value={startDate} autoFocus={true} onChange={(date) => updateData(date)} />
+
+      <Commands>
+        <Command onClick={focus}>Focus</Command>
+        <Command onClick={fillAllAnswers}>Fill all answers</Command>
+        <Command onClick={reset}>Reset</Command>
+      </Commands>
+
+      <CrosswordWrapper>
+        <Crossword
+          data={data}
+          ref={crossword}
+          onCorrect={onCorrect}
+          onLoadedCorrect={onLoadedCorrect}
+          onCrosswordCorrect={onCrosswordCorrect}
+          onCellChange={onCellChange}
+        />
+      </CrosswordWrapper>
+    </Page>
   );
 }
 
