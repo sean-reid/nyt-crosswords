@@ -61,7 +61,7 @@ const Messages = styled.pre`
 function App() {
 
   const [data,setData]=useState(dataStart);
-  const [startDate, setStartDate] = useState(new Date(1976, 1, 1));
+  const [startDate, setStartDate] = useState(new Date(1976, 0, 1));
   
   function updateData(startDate) {
     setStartDate(startDate)
@@ -161,7 +161,7 @@ function App() {
       <p>
         Enter date of NYT crossword to solve.
       </p>
-      <DatePicker value={startDate} autoFocus={true} onChange={(date) => updateData(date)} />
+      <DatePicker value={startDate} autoFocus={false} maxDate={new Date(2017,11,1)} minDate={new Date(1976,0,1)} onChange={(date) => updateData(date)} />
 
       <Commands>
         <Command onClick={focus}>Focus</Command>
