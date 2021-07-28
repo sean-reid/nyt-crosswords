@@ -17,6 +17,7 @@ const Header = styled.h1`
 const Commands = styled.div``;
 
 const Command = styled.button`
+  margin-top: 2em;
   margin-right: 1em;
 `;
 
