@@ -2,6 +2,7 @@ import React, { useCallback, useRef, useState, useEffect } from 'react';
 import Crossword from '@jaredreisinger/react-crossword';
 import DatePicker from 'react-date-picker';
 import styled from 'styled-components';
+import { Route, Switch, Link } from "react-router-dom";
 
 const dataStart = {
   across: {
